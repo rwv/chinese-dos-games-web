@@ -11,9 +11,9 @@ $ pip3 install flask
 
 ### 下载游戏文件
 
-在 `static/games` 目录下执行
+在根目录下执行
 ``` sh
-$ git pull && python3 download.py
+$ git submodule update --recursive --remote && git submodule update --recursive --remote && python3 ./static/games/download_data.py
 ```
 
 ### 运行 Flask
