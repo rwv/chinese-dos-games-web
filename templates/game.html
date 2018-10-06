@@ -70,6 +70,7 @@
             new DosBoxLoader(DosBoxLoader.emulatorJS("{{ url_for('static', filename='emularity/dosbox/dosbox-sync.js') }}"),
                 DosBoxLoader.locateAdditionalEmulatorJS(locateAdditionalFiles),
                 DosBoxLoader.nativeResolution(640, 480),
+                DosBoxLoader.fileSystemKey("{{ game_info["identifier"] }}"),
                 DosBoxLoader.mountZip("c",
                     DosBoxLoader.fetchFile("Game File",
                         "{{ url_for('static', filename="games/bin/{}.zip".format(game_info["identifier"])) }}")),
