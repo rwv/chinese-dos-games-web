@@ -13,7 +13,7 @@ $ pip3 install flask
 
 在根目录下执行
 ``` sh
-$ git submodule update --recursive --remote && git submodule update --recursive --remote && python3 ./static/games/download_data.py
+$ git submodule update --init --recursive && python3 ./static/games/download_data.py
 ```
 
 ### 运行 Flask
