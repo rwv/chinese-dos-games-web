@@ -16,6 +16,11 @@ def about():
     return render_template('about.html', games=game_infos['games'])
 
 
+@app.route('/games/')
+def games():
+    return render_template('games.html', games=game_infos['games'])
+
+
 @app.route('/games/<identifier>/')
 def game(identifier):
     game_info = game_infos["games"][identifier]
