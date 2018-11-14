@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}搜索{{ query }} - {% endblock %}
+
+{% block search_query %}{{ query }}{% endblock %}
+
+{% block main %}
+    <div class="container mt-3">
+        {% if games %}
+            <h3>游戏列表</h3>
+            <p>
+            <ul>
+                {% for key, game_info in games.items() %}
+                    <li>
+                        <a href="{{ url_for('game', identifier=game_info['identifier']) }}">{{ game_info['name']['zh-Hans'] }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+            </p>
+        {% else %}
+            <h3>找不到对应游戏，换个关键词？</h3>
+        {% endif %}
+    </div>
+{% endblock %}
+

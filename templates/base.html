@@ -27,10 +27,15 @@
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-        <div class="navbar-nav">
+        <div class="navbar-nav mr-auto">
             <a class="nav-item nav-link" href="{{ url_for('index') }}">首页</a>
+            <a class="nav-item nav-link" href="{{ url_for('games') }}">游戏列表</a>
             <a class="nav-item nav-link" href="{{ url_for('about') }}">关于</a>
         </div>
+        <form class="form-inline my-2 my-lg-0" method="get" action="{{ url_for('search') }}">
+            <input class="form-control mr-sm-2" type="search" name="q" placeholder="游戏名称" aria-label="Search" value="{% block search_query %}{% endblock %}">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">搜索</button>
+        </form>
     </div>
 </nav>
 

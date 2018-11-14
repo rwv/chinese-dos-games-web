@@ -25,6 +25,18 @@ def games():
     return render_template('games.html', games=game_infos['games'])
 
 
+@app.route('/search', methods=['GET'])
+def search():
+    query = request.args.get('q')
+    if query is None:
+        return render_template('error.html'), 404
+    search_games = dict()
+    for identifier, value in game_infos['games'].items():
+        if query in value['name']['zh-Hans']:
+            search_games[identifier] = value
+    return render_template('search.html', games=search_games, query=query)
+
+
 @app.route('/games/<identifier>/')
 def game(identifier):
     game_info = game_infos["games"][identifier]
