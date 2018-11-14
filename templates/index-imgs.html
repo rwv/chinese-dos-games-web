@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block main %}
+    <div class="container mt-3 grid">
+        {% if game_infos %}
+            {% for game_info in game_infos %}
+                <div class="card grid-item mb-3 mr-3">
+                    <a href="{{ url_for('game', identifier=game_info.identifier) }}">
+                        <img class="card-img-top"
+                             src="{{ url_for('static', filename='games/img/{}/{}'.format(game_info.identifier, game_info.coverFilename)) }}"
+                             alt="{{ game_info['name']['zh-Hans'] }}">
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ game_info['name']['zh-Hans'] }}</h5>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+                <div class="card grid-item mb-3 mr-3">
+                    <div class="card-body">
+                        <h5 class="card-title">更多游戏</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">目前共有 {{ game_count }} 款游戏</h6>
+                            <a href="{{ url_for('games') }}" class="card-link">游戏列表</a>
+                    </div>
+                </div>
+        <div class="grid">
+        </div>
+    </div>
+{% endblock %}
+
+{% block footer %}
+    <script src="https://cdnjs.loli.net/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.loli.net/ajax/libs/masonry/4.2.1/masonry.pkgd.min.js" integrity="sha256-D3o+8eRzMxa6mD+EDWrS5rMcEaAhISmCnRLdQ8kS2t4=" crossorigin="anonymous"></script>
+    <script>
+        $(document).ready(function () {
+            var $container = $(".grid");
+            $container.masonry();
+
+            $container.imagesLoaded()
+            .progress(function (instance, image) {
+                $container.masonry();
+            });
+        });
+    </script>
+{% endblock %}
