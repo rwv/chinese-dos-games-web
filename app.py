@@ -1,5 +1,5 @@
 from flask import Flask
-from flask import render_template, redirect, url_for
+from flask import render_template, redirect, url_for, make_response, request
 
 from game_infos import game_infos, game_infos_with_cover
 import json
