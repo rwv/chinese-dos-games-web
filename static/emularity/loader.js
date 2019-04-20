@@ -215,7 +215,8 @@ var Module = null;
                                              config_args.push(cfgr.model(modulecfg.driver),
                                                               cfgr.rom(modulecfg.bios_filenames));
                                            } else if (module && module.indexOf("pce-") === 0) {
-                                             config_args.push(cfgr.model(modulecfg.driver));
+                                             config_args.push(cfgr.model(modulecfg.driver),
+                                                              cfgr.extraArgs(modulecfg.extra_args));
                                            } else if (module) { // MAME
                                              config_args.push(cfgr.driver(modulecfg.driver),
                                                               cfgr.extraArgs(modulecfg.extra_args));
@@ -294,6 +295,9 @@ var Module = null;
            drives = {}, files = [], wanted_files = [],
            meta = dict_from_xml(metadata);
        files_with_ext_from_filelist(filelist, meta.emulator_ext).forEach(function (file, i) {
+                                                                           wanted_files.push(file.name);
+                                                                         });
+       files_with_ext_from_filelist(filelist, "conf").forEach(function (file, i) {
                                                                            wanted_files.push(file.name);
                                                                          });
        meta_props_matching(meta, /^vice_drive_([89])$/).forEach(function (result) {
@@ -570,7 +574,7 @@ var Module = null;
     */
    function DosBoxLoader() {
      var config = Array.prototype.reduce.call(arguments, extend);
-     config.emulator_arguments = build_dosbox_arguments(config.emulatorStart, config.files, config.extra_dosbox_args);
+     config.emulator_arguments = build_dosbox_arguments(config.emulatorStart, config.files, config.extra_dosbox_args, config.images);
      config.runner = EmscriptenRunner;
      return config;
    }
@@ -583,14 +587,27 @@ var Module = null;
    DosBoxLoader.extraArgs = function (args) {
      return { extra_dosbox_args: args };
    };
-   
-   DosBoxLoader.mountZip = function (drive, file, drive_type="hdd") { 
-     //  driver type: hdd, floppy, cdrom, img
+
+   DosBoxLoader.mountZip = function (drive, file, drive_type) {
+     //  driver type: hdd, floppy, cdrom
      return { files: [{ drive: drive,
                         mountpoint: "/" + drive,
                         file: file,
-                        drive_type: drive_type,
+                        drive_type: drive_type || "hdd",
                       }] };
+   };
+
+   DosBoxLoader.mountImage = function(drive, filepath, drive_type, file_system){
+    // See also https://www.dosbox.com/wiki/IMGMOUNT
+    // drive: the drive to mount
+    // filepath: the location of image file, like "/c/test.iso" NOTE: this depends on the method `DosBoxLoader.mountZip` or `DosBoxLoader.mountFile`
+    // drive_type: floppy, iso, hdd
+    // file_system: iso, fat, none
+    return { images: [{ drive: drive,
+                       filepath: filepath,
+                       drive_type: drive_type,
+                       file_system: file_system
+                     }] };
    };
 
    /**
@@ -602,15 +619,7 @@ var Module = null;
     config.runner = PC98DosBoxRunner;
     return config;
   }
-  PC98DosBoxLoader.__proto__ = BaseLoader;
-
-  PC98DosBoxLoader.startExe = function (path) {
-    return { emulatorStart: path };
-  };
-
-  PC98DosBoxLoader.extraArgs = function (args) {
-    return { extra_dosbox_args: args };
-  };
+  PC98DosBoxLoader.__proto__ = DosBoxLoader;
 
    /**
     * MAMELoader
@@ -723,6 +732,9 @@ var Module = null;
    function PCELoader() {
      var config = Array.prototype.reduce.call(arguments, extend);
      config.emulator_arguments = ["-c", "/emulator/pce-"+ config.pceModel +".cfg"];
+     if (config.extra_pce_args && config.extra_pce_args.length > 0) {
+       config.emulator_arguments = config.emulator_arguments.concat(config.extra_pce_args);
+     }
      config.runner = EmscriptenRunner;
      return config;
    }
@@ -730,6 +742,10 @@ var Module = null;
 
    PCELoader.model = function (model) {
      return { pceModel: model };
+   };
+
+   PCELoader.extraArgs = function (args) {
+     return { extra_pce_args: args };
    };
 
    var build_mame_arguments = function (muted, driver, native_resolution, sample_rate, peripheral, extra_args, keepaspect) {
@@ -765,7 +781,7 @@ var Module = null;
      return args;
    };
 
-   var build_dosbox_arguments = function (emulator_start, files, extra_args) {
+   var build_dosbox_arguments = function (emulator_start, files, extra_args, images) {
      var args = ['-conf', '/emulator/dosbox.conf'];
 
      var len = files.length;
@@ -781,11 +797,16 @@ var Module = null;
          else if(files[i].drive_type==='cdrom'){
           args.push('-c', 'mount '+ files[i].drive +' /emulator'+ files[i].mountpoint + ' -t cdrom');
          }
-         else if(files[i].drive_type==='img'){
-          args.push('-c', 'mount '+ files[i].drive +' /emulator'+ files[i].mountpoint + ' -t iso');
-         }
        }
      }
+
+     if (images){
+      var len = images.length;
+      for (var i = 0; i < len; i++) {
+         //See also https://www.dosbox.com/wiki/IMGMOUNT
+         args.push('-c', 'imgmount ' + images[i].drive + ' /emulator' + images[i].filepath + ' -t ' + images[i].drive_type + ' -fs ' + images[i].file_system);
+        };
+      };
 
      if (extra_args) {
        args = args.concat(extra_args);
