@@ -71,7 +71,7 @@
                 DosBoxLoader.locateAdditionalEmulatorJS(locateAdditionalFiles),
                 DosBoxLoader.nativeResolution(640, 480),
                 DosBoxLoader.fileSystemKey("{{ game_info["identifier"] }}"),
-                DosBoxLoader.mountZip("c",
+                DosBoxLoader.mountZip("{{ game_info["drive"] if "drive" in game_info else "c" }}",
                     DosBoxLoader.fetchFile("Game File",
                         "{{ url_for('static', filename="games/bin/{}.zip".format(game_info["identifier"])) }}"),
                     {% if game_info["cdrom"] %}"cdrom"{% elif game_info["floppy"] %}"floppy"{% else %}"hdd"{% endif %}

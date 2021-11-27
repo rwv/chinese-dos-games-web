@@ -109,3 +109,6 @@ static/gamedata/
 
 # PyCharm
 .idea/
+
+# VSCode
+.vscode/
