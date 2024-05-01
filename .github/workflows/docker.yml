@@ -1,0 +1,78 @@
+
+name: Docker
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  on-success:
+    needs: publish
+    runs-on: ubuntu-latest
+    if: ${{ always() && needs.publish.result == 'success' }}
+    steps:
+      - name: Notification Feishu
+        uses: whatwewant/action-robot-feishu@v0.0.13
+        with:
+          url: ${{ secrets.DOCKER_VERSION_FEISHU_BOT_WEBHOOK_URL }}
+          title: '✅ Docker 发布：${{ github.repository }}'
+          text: |
+            分支: ${{ github.ref }}
+            提交信息: ${{ github.event.head_commit.message }}
+            提交人: ${{ github.actor }}
+            状态: 构建成功（https://github.com/${{ github.repository }}/actions/runs/${{ github.run.id }}）
+    
+  on-failure:
+    needs: publish
+    runs-on: ubuntu-latest
+    if: ${{ always() && needs.publish.result == 'failure' }}
+    steps:
+      - name: Notification Feishu
+        uses: whatwewant/action-robot-feishu@v0.0.13
+        with:
+          url: ${{ secrets.DOCKER_VERSION_FEISHU_BOT_WEBHOOK_URL }}
+          title: '❌ Docker 发布：${{ github.repository }}'
+          text: |
+            分支: ${{ github.ref }}
+            提交信息: ${{ github.event.head_commit.message }}
+            提交人: ${{ github.actor }}
+            状态: 构建失败（https://github.com/${{ github.repository }}/actions/runs/${{ github.run.id }}）
+      
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get Current Date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: '0'
+
+      - name: Docker Meta
+        uses: zmicro-design/action-docker-image-meta@v1
+        id: meta
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+
+      - name: Show Docker Tags
+        run: |
+          echo "Docker Tags: ${{ steps.meta.outputs.tags }}"
+
+      - name: Build and push
+        uses: zmicro-design/action-docker-build@v1
+        with:
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          cache-from: type=registry,ref=${{ steps.meta.outputs.name }}:buildcache
+          cache-to: type=registry,ref=${{ steps.meta.outputs.name }}:buildcache,mode=max
+          tags: ${{ steps.meta.outputs.tags }}
+          # labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+          #
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}

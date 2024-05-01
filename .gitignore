@@ -109,3 +109,8 @@ static/gamedata/
 
 # PyCharm
 .idea/
+
+./data
+./tmp
+
+./static/games/bin

@@ -1,4 +1,0 @@
-[submodule "static/games"]
-	path = static/games
-	url = https://github.com/rwv/chinese-dos-games.git
-	branch = master
